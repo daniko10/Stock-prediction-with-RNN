@@ -3,6 +3,7 @@ import argparse
 import math
 import numpy as np
 import pandas as pd
+import joblib
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error
@@ -59,15 +60,14 @@ def build_features(local_csv: str,
     local['y_t'] = local['Close'].shift(-1)
     
     print(local)
-
     return local
     
 def main():
     local_csv = "data/wig20_d.csv"
-    spx_csv   = "data/spx_d.csv"
-    fx_csv    = "data/usdpln_d.csv"
-    cpi_csv   = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
-    rate_csv  = "data/stopy_ref.csv"
+    spx_csv = "data/spx_d.csv"
+    fx_csv = "data/usdpln_d.csv"
+    cpi_csv = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
+    rate_csv = "data/stopy_ref.csv"
     
     market_name = os.path.splitext(os.path.basename(local_csv))[0]
     
@@ -87,6 +87,9 @@ def main():
     X = scaler_X.fit_transform(X)
     y = scaler_y.fit_transform(y.values.reshape(-1,1)).flatten()
     
+    joblib.dump(scaler_X, f"runs/{market_name}_run/scaler_X")
+    joblib.dump(scaler_y, f"runs/{market_name}_run/scaler_y")
+        
     X_seq, y_seq = make_sequences(X, y, window=30)
     
     split = int(len(X_seq) * 0.8)
@@ -97,12 +100,12 @@ def main():
     
     early_stop = EarlyStopping(
         monitor='val_loss',
-        patience=50,
+        patience=20,
         restore_best_weights=True,
         verbose=1
     )
     
-    history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.1, verbose=1, callbacks=[early_stop])
+    history = model.fit(X_train, y_train, epochs=60, batch_size=16, validation_split=0.1, verbose=1, callbacks=[early_stop])
 
     model.save(os.path.join(outdir, "model.h5"))
 
