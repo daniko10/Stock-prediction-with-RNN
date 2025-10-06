@@ -1,6 +1,6 @@
 import os
 from sklearn.preprocessing import StandardScaler
-from Project import build_features
+from helper import build_features
 from tensorflow.keras.models import load_model
 import joblib
 import numpy as np
