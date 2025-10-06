@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 if __name__ == '__main__':
-    local_csv = "data/wig20_d.csv"
+    local_csv = "data/swig80_d.csv"
     spx_csv   = "data/spx_d.csv"
     fx_csv    = "data/usdpln_d.csv"
     cpi_csv   = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
@@ -28,8 +28,22 @@ if __name__ == '__main__':
     X = features.drop(columns=['Date','y_t'])
 
     model = load_model(os.path.join(outdir, "model.h5"), compile=False)
-    scaler_X = joblib.load(os.path.join(outdir, f"scaler_X_{market_name}.pkl"))
-    scaler_y = joblib.load(os.path.join(outdir, f"scaler_y_{market_name}.pkl"))
+    
+    scaler_X_path = os.path.join(outdir, f"scaler_X_{market_name}.pkl")
+    scaler_y_path = os.path.join(outdir, f"scaler_y_{market_name}.pkl")
+
+    scaler_X = StandardScaler()
+    scaler_y = StandardScaler()
+    scaler_X.fit(X)
+    scaler_y.fit(y_true.reshape(-1,1))
+
+    if os.path.exists(scaler_X_path) and os.path.exists(scaler_y_path):
+        scaler_X = joblib.load(scaler_X_path)
+        scaler_y = joblib.load(scaler_y_path)
+    else:
+        os.makedirs(outdir, exist_ok=True)
+        joblib.dump(scaler_X, scaler_X_path)
+        joblib.dump(scaler_y, scaler_y_path)
 
     X_scaled = scaler_X.transform(X)
 
