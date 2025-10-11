@@ -21,13 +21,14 @@ def main():
     instruments = [
         "data/wig20_d.csv",
         "data/wig_d.csv",
-        "data/mwig40_d.csv"
+        "data/mwig40_d.csv",
+        "data/wig30_d.csv"
     ]
 
     outdir = "runs/multi_run"
-    window_size = 30
+    window_size = 90
 
-    X_seq, y_seq, scalers_X, scalers_y = build_all_sequences(
+    X_seq, y_seq = build_all_sequences(
         instruments, spx_csv, fx_csv, cpi_csv, rate_csv,
         window=window_size, outdir=outdir
     )
@@ -40,10 +41,10 @@ def main():
 
     early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=1)
 
-    model.fit(X_train, y_train, epochs=60, batch_size=16, validation_split=0.1, callbacks=[early_stop])
+    batch_size = 16
+    model.fit(X_train, y_train, epochs=60, batch_size=batch_size, validation_split=0.1, callbacks=[early_stop])
 
-    model.save(os.path.join(outdir, "model.h5"))
-    print("Model saved to ", os.path.join(outdir, "model.h5"))
+    model.save(os.path.join(outdir, f"model_BD_{batch_size}_WS_{window_size}.h5"))
     
 if __name__ == '__main__':
     main()

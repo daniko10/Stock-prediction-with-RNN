@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 if __name__ == '__main__':
@@ -18,16 +19,18 @@ if __name__ == '__main__':
     outdir = "runs/multi_run"
     market_name = os.path.splitext(os.path.basename(local_csv))[0]
 
-    window_size = 30
+    window_size = 90
+    batch_size = 8
 
     features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
     features = features.iloc[1:-1].reset_index(drop=True)
 
     y_true = features['y_t'].values
 
+    date = features['Date'].values
     X = features.drop(columns=['Date','y_t'])
 
-    model = load_model(os.path.join(outdir, "model.h5"), compile=False)
+    model = load_model(os.path.join(outdir, f"model_BD_{batch_size}_WS_{window_size}.h5"), compile=False)
     
     scaler_X_path = os.path.join(outdir, f"scaler_X_{market_name}.pkl")
     scaler_y_path = os.path.join(outdir, f"scaler_y_{market_name}.pkl")
@@ -60,13 +63,22 @@ if __name__ == '__main__':
 
     y_true_window = y_true[window_size:]
 
+    dates = date[window_size:]
     plt.figure(figsize=(12,6))
-    plt.plot(y_true_window, label='True Close')
-    plt.plot(preds, label='Predicted Close')
+    plt.plot(dates, y_true_window, label='True Close')
+    plt.plot(dates, preds, label='Predicted Close')
     plt.title(f'{market_name}')
     plt.xlabel('Day')
     plt.ylabel('Price')
     plt.legend()
+    
+    plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    plt.savefig(f"wykres_BD_{batch_size}_WS_{window_size}.png", dpi=300)
+
     plt.show()
 
     print("MAE:", mean_absolute_error(y_true_window, preds))

@@ -1,4 +1,7 @@
 import xml.etree.ElementTree as ET
+from sklearn.preprocessing import StandardScaler
+import joblib
+import os
 import csv
 import pandas as pd
 import numpy as np
@@ -26,12 +29,12 @@ def parse_interest_rates(xml_path: str, out_path: str):
 parse_interest_rates("data/stopy_procentowe_archiwum.xml", "data/stopy_ref.csv")
 
 def resample(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
-    df = df.set_index('Date').sort_index()
-    idx = pd.date_range(df.index.min(), df.index.max(), freq='B')
-    df = df.reindex(idx)
-    df.index.name = 'Date'
-    df[cols] = df[cols].ffill()
-    return df.reset_index()
+    df = df.set_index('Date').sort_index() # ustawiam tutaj date jako index
+    idx = pd.date_range(df.index.min(), df.index.max(), freq='B') # mam wszystkie dni robocze
+    df = df.reindex(idx) # jak nie ma to bedzie NaN
+    df.index.name = 'Date' 
+    df[cols] = df[cols].ffill() # NaN wypelniam wartoscia z poprzedniego dnia
+    return df.reset_index() # data jako kolumna a nie index
 
 def make_sequences(X: np.ndarray, y: np.ndarray, window: int = 30) -> Tuple[np.ndarray, np.ndarray]:
     Xs, ys = [], []
@@ -57,6 +60,9 @@ def build_features(local_csv: str,
     spx['spx_change'] = spx['Close'].pct_change()
     spx = resample(spx, ['spx_change'])
     local = local.merge(spx[['Date','spx_change']], on='Date', how='left')
+    # left bo local ma wszystkie dni które chce brać pod uwagę
+
+    # muszę uzupełnić bo nie wiadomo czy S&P500 był otwarty tego dnia
     local['spx_change'] = local['spx_change'].ffill()
 
     # USD
@@ -90,8 +96,6 @@ def build_features(local_csv: str,
 def build_all_sequences(csv_list, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, window=30):
     all_X_seq = []
     all_y_seq = []
-    scalers_X = {}
-    scalers_y = {}
 
     os.makedirs(outdir, exist_ok=True)
 
@@ -100,7 +104,7 @@ def build_all_sequences(csv_list, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, wi
         print(f"Extracting: {market_name}")
 
         features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
-        features = features.iloc[1:-1].reset_index(drop=True)
+        features = features.iloc[1:-1].reset_index(drop=True) # nie biorę pierwszego i ostatniego, NaNy
 
         X = features.drop(columns=['Date','y_t'])
         y = features['y_t']
@@ -112,15 +116,13 @@ def build_all_sequences(csv_list, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, wi
 
         joblib.dump(scaler_X, os.path.join(outdir, f"scaler_X_{market_name}.pkl"))
         joblib.dump(scaler_y, os.path.join(outdir, f"scaler_y_{market_name}.pkl"))
-        scalers_X[market_name] = scaler_X
-        scalers_y[market_name] = scaler_y
 
         X_seq, y_seq = make_sequences(X_scaled, y_scaled, window=window)
 
         all_X_seq.append(X_seq)
         all_y_seq.append(y_seq)
 
-    X_seq_all = np.concatenate(all_X_seq, axis=0)
-    y_seq_all = np.concatenate(all_y_seq, axis=0)
+    all_X_seq = np.concatenate(all_X_seq, axis=0)
+    all_y_seq = np.concatenate(all_y_seq, axis=0)
 
-    return X_seq_all, y_seq_all, scalers_X, scalers_y
+    return all_X_seq, all_y_seq
