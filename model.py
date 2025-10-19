@@ -9,13 +9,13 @@ from tensorflow.keras import layers, models, callbacks, optimizers, regularizers
 def build_lstm(input_shape):
     model = models.Sequential([
         Input(shape=input_shape), # (window, features)
-        layers.Bidirectional(layers.LSTM(128, return_sequences=True)),
+        layers.Bidirectional(layers.LSTM(128, return_sequences=True)), # musze zwrócić sekwencje moich window_size kroków [h1, h2, .., h_ws] dla kolejnej warstwy
         layers.Dropout(0.3),
         layers.Bidirectional(layers.LSTM(64, return_sequences=True)),
         layers.Dropout(0.3),
-        layers.Bidirectional(layers.LSTM(32, return_sequences=False)),
+        layers.Bidirectional(layers.LSTM(32, return_sequences=False)), # zwracam tylko ostatni krok [h_ws]
         layers.Dropout(0.3),
-        layers.Dense(32, activation='relu'),
+        layers.Dense(16, activation='relu'),
         layers.Dense(1)
     ])
 
