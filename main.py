@@ -38,7 +38,7 @@ def main():
           X_train, X_test = X_seq[:split], X_seq[split:]
           y_train, y_test = y_seq[:split], y_seq[split:]
 
-          model = build_lstm(input_shape=(X_train.shape[1], X_train.shape[2]))
+          model = build_lstm(input_shape=(X_train.shape[1], X_train.shape[2]), dropout=dropout)
 
           early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=1)
 
