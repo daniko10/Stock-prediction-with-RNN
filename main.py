@@ -24,27 +24,27 @@ def main():
         "data/mwig40_d.csv",
         "data/wig30_d.csv"
     ]
-
     outdir = "runs/multi_run"
-    window_size = 90
 
-    X_seq, y_seq = build_all_sequences(
-        instruments, spx_csv, fx_csv, cpi_csv, rate_csv,
-        window=window_size, outdir=outdir
-    )
+    for window_size in [30, 60, 90]:
+      for dropout in [0.3, 0.4, 0.5]:
+        for batch_size in [64, 32, 16, 8]:
+          X_seq, y_seq = build_all_sequences(
+              instruments, spx_csv, fx_csv, cpi_csv, rate_csv,
+              window=window_size, outdir=outdir
+          )
 
-    split = int(len(X_seq) * 0.8)
-    X_train, X_test = X_seq[:split], X_seq[split:]
-    y_train, y_test = y_seq[:split], y_seq[split:]
+          split = int(len(X_seq) * 0.8)
+          X_train, X_test = X_seq[:split], X_seq[split:]
+          y_train, y_test = y_seq[:split], y_seq[split:]
 
-    model = build_lstm(input_shape=(X_train.shape[1], X_train.shape[2]))
+          model = build_lstm(input_shape=(X_train.shape[1], X_train.shape[2]))
 
-    early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=1)
+          early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=1)
 
-    batch_size = 16
-    model.fit(X_train, y_train, epochs=60, batch_size=batch_size, validation_split=0.1, callbacks=[early_stop])
+          model.fit(X_train, y_train, epochs=60, batch_size=batch_size, validation_split=0.1, callbacks=[early_stop])
 
-    model.save(os.path.join(outdir, f"model_BD_{batch_size}_WS_{window_size}.h5"))
+          model.save(os.path.join(outdir, f"model_BS_{batch_size}_WS_{window_size}_D_{dropout}.h5"))
     
 if __name__ == '__main__':
     main()

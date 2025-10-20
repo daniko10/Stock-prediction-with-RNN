@@ -24,6 +24,7 @@ if __name__ == '__main__':
 
     features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
     features = features.iloc[1:-1].reset_index(drop=True)
+    # features = features[3000:]
 
     y_true = features['y_t'].values
 
@@ -71,13 +72,8 @@ if __name__ == '__main__':
     plt.xlabel('Day')
     plt.ylabel('Price')
     plt.legend()
-    
-    plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    plt.xticks(rotation=45)
-    plt.tight_layout()
 
-    plt.savefig(f"wykres_BD_{batch_size}_WS_{window_size}.png", dpi=300)
+    plt.savefig(f"wykres_BS_{batch_size}_WS_{window_size}.png", dpi=300)
 
     plt.show()
 
