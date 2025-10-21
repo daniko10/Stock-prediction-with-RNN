@@ -18,7 +18,7 @@ def read_stock_data(path: str) -> pd.DataFrame:
     df = df[available]
     df.rename(columns={pl:en for pl,en in colmap.items() if pl in available}, inplace=True)
     
-    df = df[df['Date'] >= '2000-01-01']
+    df = df[df['Date'] >= '2008-01-01']
     
     df['Date'] = pd.to_datetime(df['Date'])
     df['Close'] = pd.to_numeric(df['Close'])

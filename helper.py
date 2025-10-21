@@ -29,12 +29,12 @@ def parse_interest_rates(xml_path: str, out_path: str):
 parse_interest_rates("data/stopy_procentowe_archiwum.xml", "data/stopy_ref.csv")
 
 def resample(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
-    df = df.set_index('Date').sort_index() # ustawiam tutaj date jako index
-    idx = pd.date_range(df.index.min(), df.index.max(), freq='B') # mam wszystkie dni robocze
-    df = df.reindex(idx) # jak nie ma to bedzie NaN
+    df = df.set_index('Date').sort_index()
+    idx = pd.date_range(df.index.min(), df.index.max(), freq='B')
+    df = df.reindex(idx)
     df.index.name = 'Date' 
-    df[cols] = df[cols].ffill() # NaN wypelniam wartoscia z poprzedniego dnia
-    return df.reset_index() # data jako kolumna a nie index
+    df[cols] = df[cols].ffill()
+    return df.reset_index()
 
 def make_sequences(X: np.ndarray, y: np.ndarray, window: int = 30) -> Tuple[np.ndarray, np.ndarray]:
     Xs, ys = [], []
@@ -60,9 +60,6 @@ def build_features(local_csv: str,
     spx['spx_change'] = spx['Close'].pct_change()
     spx = resample(spx, ['spx_change'])
     local = local.merge(spx[['Date','spx_change']], on='Date', how='left')
-    # left bo local ma wszystkie dni które chce brać pod uwagę
-
-    # muszę uzupełnić bo nie wiadomo czy S&P500 był otwarty tego dnia
     local['spx_change'] = local['spx_change'].ffill()
 
     # USD
@@ -73,7 +70,7 @@ def build_features(local_csv: str,
     
     # CPI
     cpi = read_cpi(cpi_csv)
-    cpi = cpi.groupby('Date').nth(2).reset_index() # to jest miesiac z poprzedniego roku
+    cpi = cpi.groupby('Date').nth(2).reset_index()
     cpi = resample(cpi, ['Value'])
     cpi.rename(columns={'Value':'CPI'}, inplace=True)
     local = local.merge(cpi, on='Date', how='left')
@@ -104,7 +101,7 @@ def build_all_sequences(csv_list, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, wi
         print(f"Extracting: {market_name}")
 
         features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
-        features = features.iloc[1:-1].reset_index(drop=True) # nie biorę pierwszego i ostatniego, NaNy
+        features = features.iloc[1:-1].reset_index(drop=True)
 
         X = features.drop(columns=['Date','y_t'])
         y = features['y_t']

@@ -3,14 +3,14 @@ import os
 import tensorflow as tf
 from tensorflow.keras import layers, models, callbacks, optimizers, regularizers, Input
 
-def build_lstm(input_shape, dropout=0.3):
+def build_lstm(input_shape, dropout):
     model = models.Sequential([
-        Input(shape=input_shape), # (window, features)
-        layers.Bidirectional(layers.LSTM(128, return_sequences=True)), # musze zwrócić sekwencje moich window_size kroków [h1, h2, .., h_ws] dla kolejnej warstwy
+        Input(shape=input_shape),
+        layers.LSTM(128, return_sequences=True),
         layers.Dropout(dropout),
-        layers.Bidirectional(layers.LSTM(64, return_sequences=True)),
+        layers.LSTM(64, return_sequences=True),
         layers.Dropout(dropout),
-        layers.Bidirectional(layers.LSTM(32, return_sequences=False)), # zwracam tylko ostatni krok [h_ws]
+        layers.LSTM(32, return_sequences=False),
         layers.Dropout(dropout),
         layers.Dense(16, activation='relu'),
         layers.Dense(1)
