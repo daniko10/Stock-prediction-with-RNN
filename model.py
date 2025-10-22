@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 from tensorflow.keras import layers, models, callbacks, optimizers, regularizers, Input
 
-def build_lstm(input_shape, dropout):
+def build_lstm(input_shape, dropout, days_to_predict):
     model = models.Sequential([
         Input(shape=input_shape),
         layers.LSTM(128, return_sequences=True),
@@ -13,7 +13,7 @@ def build_lstm(input_shape, dropout):
         layers.LSTM(32, return_sequences=False),
         layers.Dropout(dropout),
         layers.Dense(16, activation='relu'),
-        layers.Dense(1)
+        layers.Dense(days_to_predict)
     ])
 
     model.compile(

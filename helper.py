@@ -8,7 +8,7 @@ import numpy as np
 from typing import List, Tuple
 from read_files import read_stock_data, read_rate, read_cpi, read_exchange
 
-def parse_interest_rates(xml_path: str, out_path: str):
+def parse_interest_rates(xml_path, out_path):
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
@@ -28,7 +28,7 @@ def parse_interest_rates(xml_path: str, out_path: str):
 
 parse_interest_rates("data/stopy_procentowe_archiwum.xml", "data/stopy_ref.csv")
 
-def resample(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
+def resample(df, cols):
     df = df.set_index('Date').sort_index()
     idx = pd.date_range(df.index.min(), df.index.max(), freq='B')
     df = df.reindex(idx)
@@ -36,19 +36,14 @@ def resample(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
     df[cols] = df[cols].ffill()
     return df.reset_index()
 
-def make_sequences(X: np.ndarray, y: np.ndarray, window: int = 30) -> Tuple[np.ndarray, np.ndarray]:
+def make_sequences(X, y, window_size, days_to_predict):
     Xs, ys = [], []
-    for i in range(len(X) - window):
-        Xs.append(X[i:(i + window)])
-        ys.append(y[i + window])
+    for i in range(len(X) - window_size - days_to_predict + 1):
+        Xs.append(X[i:(i + window_size)])
+        ys.append(y[(i + window_size):(i + window_size + days_to_predict)])
     return np.array(Xs), np.array(ys)
 
-def build_features(local_csv: str,
-                   spx_csv: str,
-                   fx_csv: str,
-                   cpi_csv: str,
-                   rate_csv: str) -> pd.DataFrame:
-
+def build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv):
     local = read_stock_data(local_csv)
 
     month = local['Date'].dt.month
@@ -85,41 +80,30 @@ def build_features(local_csv: str,
     
     local = local.drop(columns=['index'])
     
-    local['y_t'] = local['Close'].shift(-1)
-    
     print(local)
     return local
 
-def build_all_sequences(csv_list, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, window=30):
+def build_all_sequences(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, window, days_to_predict):
     all_X_seq = []
     all_y_seq = []
 
     os.makedirs(outdir, exist_ok=True)
 
-    for local_csv in csv_list:
-        market_name = os.path.splitext(os.path.basename(local_csv))[0]
-        print(f"Extracting: {market_name}")
+    market_name = os.path.splitext(os.path.basename(local_csv))[0]
+    print(f"Extracting: {market_name}")
 
-        features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
-        features = features.iloc[1:-1].reset_index(drop=True)
+    features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
+    features = features.iloc[1:-1].reset_index(drop=True)
 
-        X = features.drop(columns=['Date','y_t'])
-        y = features['y_t']
+    X = features.drop(columns=['Date'])
+    y = features['Close'].values
 
-        scaler_X = StandardScaler()
-        scaler_y = StandardScaler()
-        X_scaled = scaler_X.fit_transform(X)
-        y_scaled = scaler_y.fit_transform(y.values.reshape(-1,1)).flatten()
+    scaler_X = StandardScaler()
+    scaler_y = StandardScaler()
+    X_scaled = scaler_X.fit_transform(X)
+    y_scaled = scaler_y.fit_transform(y.reshape(-1,1)).flatten()
 
-        joblib.dump(scaler_X, os.path.join(outdir, f"scaler_X_{market_name}.pkl"))
-        joblib.dump(scaler_y, os.path.join(outdir, f"scaler_y_{market_name}.pkl"))
+    joblib.dump(scaler_X, os.path.join(outdir, f"scaler_X_{market_name}.pkl"))
+    joblib.dump(scaler_y, os.path.join(outdir, f"scaler_y_{market_name}.pkl"))
 
-        X_seq, y_seq = make_sequences(X_scaled, y_scaled, window=window)
-
-        all_X_seq.append(X_seq)
-        all_y_seq.append(y_seq)
-
-    all_X_seq = np.concatenate(all_X_seq, axis=0)
-    all_y_seq = np.concatenate(all_y_seq, axis=0)
-
-    return all_X_seq, all_y_seq
+    return make_sequences(X_scaled, y_scaled, window, days_to_predict)
