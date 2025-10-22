@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-def read_stock_data(path: str) -> pd.DataFrame:
+def read_stock_data(path: str, is_testing = False) -> pd.DataFrame:
     if not os.path.exists(path):
         raise FileNotFoundError(path)
         
@@ -18,7 +18,10 @@ def read_stock_data(path: str) -> pd.DataFrame:
     df = df[available]
     df.rename(columns={pl:en for pl,en in colmap.items() if pl in available}, inplace=True)
     
-    df = df[df['Date'] >= '2008-01-01']
+    if (not is_testing):
+        df = df[(df['Date'] >= '2000-01-01') & (df['Date'] < '2024-01-01')]
+    else:
+        df = df[df['Date'] >= '2000-01-01']
     
     df['Date'] = pd.to_datetime(df['Date'])
     df['Close'] = pd.to_numeric(df['Close'])
