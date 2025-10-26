@@ -16,15 +16,15 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def train_and_save_models(X_train, y_train, outdir, window_size, days_to_predict):
-    for dropout in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        for batch_size in [32, 64, 128, 256, 512, 1028]:
+    for dropout in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        for batch_size in [1028, 512, 256, 128, 64, 32]:
             logging.info(f"Training model with window_size={window_size}, dropout={dropout}, batch_size={batch_size}")
 
-            early_stop = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True, verbose=1)
+            early_stop = EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True, verbose=1)
 
             model = build_lstm(input_shape=(X_train.shape[1], X_train.shape[2]), dropout=dropout, days_to_predict=days_to_predict)
             model.fit(
-                X_train, y_train, epochs=1000, batch_size=batch_size, 
+                X_train, y_train, epochs=500, batch_size=batch_size, 
                 validation_split=0.1, shuffle=False, callbacks=[early_stop]
             )
 
@@ -41,7 +41,7 @@ def main():
     instrument = "data/wig30_d.csv"
     outdir = "runs/multi_run"
     
-    days_to_predict = 30
+    days_to_predict = 10
 
     for window_size in [120, 90, 60, 30]:
         logging.info(f"Building sequences for window_size={window_size}")

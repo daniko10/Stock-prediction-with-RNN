@@ -29,11 +29,21 @@ def parse_interest_rates(xml_path, out_path):
 parse_interest_rates("data/stopy_procentowe_archiwum.xml", "data/stopy_ref.csv")
 
 def resample(df, cols):
-    df = df.set_index('Date').sort_index()
-    idx = pd.date_range(df.index.min(), df.index.max(), freq='B')
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.sort_values('Date')
+
+    df = df.set_index('Date', drop=True)
+
+    idx = pd.bdate_range(df.index.min(), df.index.max())
     df = df.reindex(idx)
-    df.index.name = 'Date' 
-    df[cols] = df[cols].ffill()
+
+    df.index.name = 'Date'
+
+    for col in cols:
+        if col in df.columns:
+            df[col] = df[col].ffill()
+
     return df.reset_index()
 
 def make_sequences(X, y, window_size, days_to_predict):
@@ -43,8 +53,8 @@ def make_sequences(X, y, window_size, days_to_predict):
         ys.append(y[(i + window_size):(i + window_size + days_to_predict)])
     return np.array(Xs), np.array(ys)
 
-def build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv):
-    local = read_stock_data(local_csv)
+def build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, is_testing=False):
+    local = read_stock_data(local_csv, is_testing)
 
     month = local['Date'].dt.month
     local['month_sin'] = np.sin(2*np.pi*month/12.0)
