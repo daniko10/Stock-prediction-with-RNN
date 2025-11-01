@@ -21,7 +21,7 @@ def read_stock_data(path: str, is_testing = False) -> pd.DataFrame:
     if (not is_testing):
         df = df[(df['Date'] >= '2000-01-01') & (df['Date'] < '2024-01-01')]
     else:
-        df = df[df['Date'] >= '2000-01-01']
+        df = df[(df['Date'] >= '2000-01-01') & (df['Date'] <= '2024-12-31')]
     
     df['Date'] = pd.to_datetime(df['Date'])
     df['Close'] = pd.to_numeric(df['Close'])

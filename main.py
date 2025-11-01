@@ -37,9 +37,9 @@ def main():
     fx_csv = "data/usdpln_d.csv"
     cpi_csv = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
     rate_csv = "data/stopy_ref.csv"
-
     instrument = "data/wig30_d.csv"
-    outdir = "runs/multi_run"
+    outdir_scalers = "scalers/"
+    outdir_models = "models/"
     
     days_to_predict = 10
 
@@ -47,9 +47,9 @@ def main():
         logging.info(f"Building sequences for window_size={window_size}")
         X_train, y_train = build_all_sequences(
             instrument, spx_csv, fx_csv, cpi_csv, rate_csv,
-            outdir, window_size, days_to_predict
+            outdir_scalers, window_size, days_to_predict
         )
-        train_and_save_models(X_train, y_train, outdir, window_size, days_to_predict)
+        train_and_save_models(X_train, y_train, outdir_models, window_size, days_to_predict)
 
 if __name__ == '__main__':
     main()

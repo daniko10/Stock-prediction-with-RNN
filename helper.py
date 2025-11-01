@@ -90,7 +90,8 @@ def build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, is_testing=Fal
     
     local = local.drop(columns=['index'])
     
-    print(local)
+    local.to_csv("data/features.txt", index=False)
+
     return local
 
 def build_all_sequences(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, window, days_to_predict):
