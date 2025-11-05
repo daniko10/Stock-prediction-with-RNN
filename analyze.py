@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     available_n_days = len(features_future) - len(features) - days_to_predict
     for i in range(available_n_days):
-        last_window = X_scaled[-window_size-i:-i-days_to_predict]
+        last_window = X_scaled[len(features)-window_size+i:(len(features) + i)]
         last_window = np.expand_dims(last_window, axis=0)
 
         Y_pred_scaled = model.predict(last_window)
