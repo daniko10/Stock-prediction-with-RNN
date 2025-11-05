@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from tensorflow.keras.models import load_model
-from helper import build_features
+from helper_functions import build_features
 
 if __name__ == '__main__':
     local_csv = "data/wig30_d.csv"

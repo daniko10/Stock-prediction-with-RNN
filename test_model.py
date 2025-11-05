@@ -1,6 +1,5 @@
 import os
 from sklearn.preprocessing import StandardScaler
-from helper import build_features
 from tensorflow.keras.models import load_model
 import joblib
 import numpy as np
@@ -10,8 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from helper import make_sequences
-from helper import make_sequences
+from helper_functions import make_sequences, build_features
 
 if __name__ == '__main__':
     local_csv = "data/wig30_d.csv"

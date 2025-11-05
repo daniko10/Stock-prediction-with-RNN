@@ -7,8 +7,8 @@ import joblib
 from sklearn.preprocessing import StandardScaler
 
 from read_files import read_stock_data, read_rate, read_cpi, read_exchange
-from helper import resample, make_sequences, build_features, build_all_sequences
-from model import build_lstm
+from helper_functions import resample, make_sequences, build_features, build_all_sequences
+from model_structure import build_lstm
 
 from tensorflow.keras.callbacks import EarlyStopping
 import logging

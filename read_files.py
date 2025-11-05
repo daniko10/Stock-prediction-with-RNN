@@ -26,7 +26,12 @@ def read_stock_data(path: str, is_testing = False) -> pd.DataFrame:
     df['Date'] = pd.to_datetime(df['Date'])
     df['Close'] = pd.to_numeric(df['Close'])
     df['Volume'] = pd.to_numeric(df['Volume'])
-    
+
+    df = df.sort_values("Date").reset_index(drop=True)
+
+    print("Min:", df["Date"].min())
+    print("Max:", df["Date"].max())
+        
     return df
 
 def read_rate(path: str) -> pd.DataFrame:
