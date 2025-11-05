@@ -37,7 +37,7 @@ def main():
     fx_csv = "data/usdpln_d.csv"
     cpi_csv = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
     rate_csv = "data/stopy_ref.csv"
-    instrument = "data/wig30_d.csv"
+    instrument = "data/swig80_d.csv"
     outdir_scalers = "scalers/"
     outdir_models = "models/"
     

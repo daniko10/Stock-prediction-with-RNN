@@ -9,7 +9,7 @@ from tensorflow.keras.models import load_model
 from helper import build_features
 
 if __name__ == '__main__':
-    local_csv = "data/mwig40_d.csv"
+    local_csv = "data/wig30_d.csv"
     spx_csv   = "data/spx_d.csv"
     fx_csv    = "data/usdpln_d.csv"
     cpi_csv   = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
