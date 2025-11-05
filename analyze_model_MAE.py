@@ -9,13 +9,17 @@ from tensorflow.keras.models import load_model
 from helper_functions import build_features
 
 if __name__ == '__main__':
-    local_csv = "data/wig30_d.csv"
+    local_csv = "data/swig80_d.csv"
     spx_csv   = "data/spx_d.csv"
     fx_csv    = "data/usdpln_d.csv"
     cpi_csv   = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
     rate_csv  = "data/stopy_ref.csv"
     outdir_scalers = "scalers/"
     outdir_models = "models/"
+    outdir_results = "MAE_results/"
+
+    if not os.path.exists(outdir_results):
+        os.makedirs(outdir_results)
 
     market_name = os.path.splitext(os.path.basename(local_csv))[0]
     days_to_predict = 10
@@ -72,9 +76,5 @@ if __name__ == '__main__':
     plt.ylabel("Średnie MAE")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"avg_mae_per_day_{market_name}.png")
+    plt.savefig(f"{outdir_results}/avg_mae_per_day_{market_name}.png")
     plt.show()
-
-    print("Średnie MAE dla każdego dnia:")
-    for i, v in enumerate(avg_mae_per_day, 1):
-        print(f"Dzień {i}: {v:.4f}")

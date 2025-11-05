@@ -89,8 +89,6 @@ def build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, is_testing=Fal
     local['Rate'] = local['Rate'].ffill()
     
     local = local.drop(columns=['index'])
-    
-    local.to_csv("data/features.txt", index=False)
 
     return local
 
