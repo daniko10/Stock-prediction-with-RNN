@@ -9,14 +9,14 @@ from tensorflow.keras.models import load_model
 from helper_functions import build_features
 
 if __name__ == '__main__':
-    local_csv = "data/swig80_d.csv"
+    local_csv = "data/wig30_d.csv"
     spx_csv   = "data/spx_d.csv"
     fx_csv    = "data/usdpln_d.csv"
     cpi_csv   = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
     rate_csv  = "data/stopy_ref.csv"
     outdir_scalers = "scalers/"
     outdir_models = "models/"
-    outdir_results = "MAE_results/"
+    outdir_results = "LSTM_results/"
 
     if not os.path.exists(outdir_results):
         os.makedirs(outdir_results)

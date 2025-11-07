@@ -4,4 +4,4 @@ scalers/
 models/
 *.png
 GBM_results/
-MAE_results/
+LSTM_results/

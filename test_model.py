@@ -73,7 +73,3 @@ if __name__ == '__main__':
     plot_name = f"forecast_WS_{window_size}_D_{dropout}_BS_{batch_size}.png"
     plt.savefig(plot_name)
     plt.close()
-
-    print("\nBest model:")
-    print(f"Window Size: {best_model[0]}, Dropout: {best_model[1]}, Batch Size: {best_model[2]}")
-    print(f"MAE: {best_model[4]:.6f}, MSE: {best_model[5]:.6f}, RMSE: {best_model[6]:.6f}")

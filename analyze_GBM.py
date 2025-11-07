@@ -17,9 +17,6 @@ if __name__ == "__main__":
         os.makedirs(outdir)
     market_name = os.path.splitext(os.path.basename(local_csv))[0]
 
-    print("Dlugosc danych treningowych:", len(train_data))
-    print("Dlugosc danych testowych:", len(test_data))
-
     stock_prices_train = train_data["Close"]
     log_returns = np.log(stock_prices_train / stock_prices_train.shift(1)).dropna()
     stock_prices = test_data["Close"][len(train_data)-1:]
