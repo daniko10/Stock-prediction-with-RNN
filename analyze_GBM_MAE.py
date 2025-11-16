@@ -11,7 +11,7 @@ days_to_predict = 10
 
 if __name__ == "__main__":
     outdir = "GBM_results/"
-    local_csv = "data/wig20_d.csv"
+    local_csv = "data/wig30_d.csv"
     train_data = read_stock_data(local_csv)
     test_data = read_stock_data(local_csv, is_testing=True)
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     avg_mae_per_day = ae_per_day_all / available_n_days
     plt.figure(figsize=(10,5))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
-    plt.title(f"Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}")
-    plt.xlabel("Dzień prognozy")
+    plt.title(f"GBM - Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}")
+    plt.xlabel("Dzień predykcji")
     plt.ylabel("Średnie MAE")
     plt.savefig(f"{outdir}/avg_mae_per_day_GBM_{market_name}.png")

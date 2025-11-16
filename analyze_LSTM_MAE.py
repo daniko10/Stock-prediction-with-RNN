@@ -71,7 +71,7 @@ if __name__ == '__main__':
     avg_mae_per_day = ae_per_day_all / available_n_days
     plt.figure(figsize=(8, 4))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
-    plt.title(f"Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}\nŚrednia cena zamknięcia styczeń-grudzień 2024: {average_close:.2f}")
+    plt.title(f"LSTM - Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}\nŚrednia cena zamknięcia styczeń-grudzień 2024: {average_close:.2f}")
     plt.xlabel("Dzień predykcji")
     plt.ylabel("Średnie MAE")
     plt.grid(True)
