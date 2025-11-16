@@ -11,7 +11,7 @@ days_to_predict = 10
 
 if __name__ == "__main__":
     outdir = "GBM_results/"
-    local_csv = "data/wig30_d.csv"
+    local_csv = "data/wig20_d.csv"
     train_data = read_stock_data(local_csv)
     test_data = read_stock_data(local_csv, is_testing=True)
 
@@ -35,7 +35,6 @@ if __name__ == "__main__":
 
     dt = T / n_time_intervals
 
-    average_close = stock_prices.mean()
     ae_per_day_all = np.zeros((days_to_predict,))
     S_fwd = np.zeros((n_time_intervals + 1, n_simulations))
 
@@ -47,12 +46,12 @@ if __name__ == "__main__":
             Z = np.random.standard_normal(n_simulations)
             S_fwd[t] = S_fwd[t - 1] * np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z)
         for d in range(days_to_predict):
-            ae_per_day_all[d] += np.abs(S_fwd[d + 1].mean() - stock_prices.iloc[i + d + 1])
+            ae_per_day_all[d] += np.abs(np.median(S_fwd[d + 1]) - stock_prices.iloc[i + d + 1])
 
     avg_mae_per_day = ae_per_day_all / available_n_days
     plt.figure(figsize=(10,5))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
-    plt.title(f"Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}\nŚrednia cena zamknięcia styczeń-grudzień 2024: {average_close:.2f}")
+    plt.title(f"Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}")
     plt.xlabel("Dzień prognozy")
     plt.ylabel("Średnie MAE")
     plt.savefig(f"{outdir}/avg_mae_per_day_GBM_{market_name}.png")
