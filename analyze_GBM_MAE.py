@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from read_files import read_stock_data
 
+np.random.seed(42)
+
 business_day_in_year = 252
 days_to_predict = 10
 
@@ -35,37 +37,17 @@ if __name__ == "__main__":
 
     average_close = stock_prices.mean()
     ae_per_day_all = np.zeros((days_to_predict,))
-    mean_GBM_per_day_all = np.zeros((days_to_predict,))
+    S_fwd = np.zeros((n_time_intervals + 1, n_simulations))
 
     available_n_days = len(stock_prices) - days_to_predict
     for i in range(available_n_days):
-        S0 = stock_prices.iloc[i]
-        S_fwd = np.zeros((n_time_intervals + 1, n_simulations))
-        S_fwd[0] = S0
+        S_fwd[0] = stock_prices.iloc[i]
 
         for t in range(1, n_time_intervals + 1):
             Z = np.random.standard_normal(n_simulations)
             S_fwd[t] = S_fwd[t - 1] * np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z)
         for d in range(days_to_predict):
             ae_per_day_all[d] += np.abs(S_fwd[d + 1].mean() - stock_prices.iloc[i + d + 1])
-            mean_GBM_per_day_all[d] = S_fwd[d + 1].mean()
-
-        if i == 0:
-            plt.figure(figsize=(15,10))
-            plt.plot(S_fwd[:,0:n_simulations])
-            plt.title(f"Symulacje cen {market_name} – prognoza na {days_to_predict} dni\nOczekiwana roczna stopa zwrotu: {mu:.2%}, Roczna zmienność: {sigma:.2%}\nOd {test_data['Date'][len(train_data):].iloc[i].date()} do {test_data['Date'][len(train_data):].iloc[i+days_to_predict-1].date()}")
-            plt.xlabel("Dzień symulacji")
-            plt.ylabel("Cena indeksu")
-            plt.grid()
-            plt.savefig(f"{outdir}/GBM_simulations_{n_simulations}_{market_name}.png")
-
-            plt.clf()
-            plt.plot(range(1, days_to_predict + 1), mean_GBM_per_day_all, marker='o')
-            plt.title(f"Średnie prognozowane cen {market_name} – prognoza na {days_to_predict} dni\nOczekiwana roczna stopa zwrotu: {mu:.2%}, Roczna zmienność: {sigma:.2%}\nOd {test_data['Date'][len(train_data):].iloc[i].date()} do {test_data['Date'][len(train_data):].iloc[i+days_to_predict-1].date()}")
-            plt.xlabel("Dzień prognozy")
-            plt.ylabel("Średnia prognozowana cena indeksu")
-            plt.grid()
-            plt.savefig(f"{outdir}/GBM_mean_forecast_{n_simulations}_{market_name}.png")
 
     avg_mae_per_day = ae_per_day_all / available_n_days
     plt.figure(figsize=(10,5))
