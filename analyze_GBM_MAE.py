@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+from constants import local_csv, outdir_GBM
 import matplotlib.pyplot as plt
 from read_files import read_stock_data
 
@@ -10,13 +11,11 @@ business_day_in_year = 252
 days_to_predict = 10
 
 if __name__ == "__main__":
-    outdir = "GBM_results/"
-    local_csv = "data/wig30_d.csv"
     train_data = read_stock_data(local_csv)
     test_data = read_stock_data(local_csv, is_testing=True)
 
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
+    if not os.path.exists(outdir_GBM):
+        os.makedirs(outdir_GBM)
     market_name = os.path.splitext(os.path.basename(local_csv))[0]
 
     stock_prices_train = train_data["Close"]
@@ -53,13 +52,13 @@ if __name__ == "__main__":
             plt.plot(range(n_time_intervals), S_fwd[1:], lw=1)
             plt.plot(range(n_time_intervals), true_future[1:], linestyle="--", color="tab:orange",
                     linewidth=2, label="Prawdziwa przyszłość")
-            plt.title(f"GBM - symulacja 10 możliwości - {market_name}")
+            plt.title(f"GBM - symulacja 10 możliwości na pierwsze 10 dni - {market_name}")
             plt.xlabel("Dni")
             plt.ylabel("Cena zamknięcia")
             plt.legend()
             plt.grid(True)
             plt.tight_layout()
-            plt.savefig(f"{outdir}/GBM_simulations_all_{market_name}.png", dpi=150)
+            plt.savefig(f"{outdir_GBM}/GBM_simulations_all_{market_name}.png", dpi=150)
             plt.show()
             plt.clf()
 
@@ -69,13 +68,13 @@ if __name__ == "__main__":
                     linewidth=2, label="Prawdziwa przyszłość")
             plt.plot(range(n_time_intervals), S_fwd[1:, 0], color="tab:green",
                     linewidth=2, label="Predykcja (1. ścieżka)")
-            plt.title(f"GBM - Predykcja jednej ścieżki razem z prawdziwą - {market_name}")
+            plt.title(f"GBM - Predykcja na 10 dni - {market_name}")
             plt.xlabel("Dni")
             plt.ylabel("Cena zamknięcia")
             plt.legend()
             plt.grid(True)
             plt.tight_layout()
-            plt.savefig(f"{outdir}/GBM_forecast_{market_name}.png", dpi=150)
+            plt.savefig(f"{outdir_GBM}/GBM_forecast_{market_name}.png", dpi=150)
             plt.show()
 
 
@@ -87,4 +86,4 @@ if __name__ == "__main__":
     plt.ylabel("Średnie MAE")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"{outdir}/MAE_{market_name}.png")
+    plt.savefig(f"{outdir_GBM}/MAE_{market_name}.png")

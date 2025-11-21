@@ -4,22 +4,21 @@ import joblib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from constants import local_csv, outdir_LSTM
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from tensorflow.keras.models import load_model
 from helper_functions import build_features
 
 if __name__ == '__main__':
-    local_csv = "data/wig30_d.csv"
     spx_csv   = "data/spx_d.csv"
     fx_csv    = "data/usdpln_d.csv"
     cpi_csv   = "data/miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982roku.csv"
     rate_csv  = "data/stopy_ref.csv"
     outdir_scalers = "scalers/"
     outdir_models = "models/"
-    outdir_results = "LSTM_results/"
 
-    if not os.path.exists(outdir_results):
-        os.makedirs(outdir_results)
+    if not os.path.exists(outdir_LSTM):
+        os.makedirs(outdir_LSTM)
 
     market_name = os.path.splitext(os.path.basename(local_csv))[0]
     days_to_predict = 10
@@ -78,7 +77,7 @@ if __name__ == '__main__':
             plt.legend()
             plt.grid(True)
             plt.tight_layout()
-            plt.savefig(f"{outdir_results}/LSTM_forecast_{market_name}.png", dpi=150)
+            plt.savefig(f"{outdir_LSTM}/LSTM_forecast_{market_name}.png", dpi=150)
     
     avg_mae_per_day = ae_per_day_all / available_n_days
     plt.figure(figsize=(8, 4))
@@ -88,5 +87,5 @@ if __name__ == '__main__':
     plt.ylabel("Średnie MAE")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f"{outdir_results}/MAE_{market_name}.png")
+    plt.savefig(f"{outdir_LSTM}/MAE_{market_name}.png")
     plt.show()
