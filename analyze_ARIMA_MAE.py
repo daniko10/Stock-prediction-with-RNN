@@ -20,7 +20,7 @@ if __name__ == "__main__":
     stock_prices_future = test_data["Close"][len(train_data):]
     full_series = test_data["Close"]
 
-    ae_per_day_all = np.zeros((days_to_predict,))
+    ae_per_day = np.zeros((days_to_predict,))
 
     available_n_days = len(stock_prices_future) - days_to_predict
 
@@ -29,21 +29,36 @@ if __name__ == "__main__":
 
         model = auto_arima(
             history,
-            seasonal=False,
             stepwise=True,
-            trace=False
+            trace=True,
+            trend="t"
         )
 
         forecast = model.predict(n_periods=days_to_predict)
 
         for d in range(days_to_predict):
-            ae_per_day_all[d] += np.abs(forecast.iloc[d] - stock_prices_future.iloc[i + d])
+            ae_per_day[d] += np.abs(forecast.iloc[d] - stock_prices_future.iloc[i + d])
+        if i == 0: # rysuje dla pierwszych 10 dni styczniowych
+            true_future = stock_prices_future.iloc[0 : days_to_predict].reset_index(drop=True)
+            plt.figure(figsize=(12, 6))
+            plt.plot(range(1, days_to_predict + 1), forecast, marker='o', label="Predykcja ARIMA")
+            plt.plot(range(1, days_to_predict + 1), true_future, linestyle="--", color="tab:orange",
+                     linewidth=2, label="Prawdziwa przyszłość")
+            plt.title(f"ARIMA - Predykcja na 10 dni - {market_name}")
+            plt.xlabel("Dni")
+            plt.ylabel("Cena zamknięcia")
+            plt.legend()
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(f"{outdir}/ARIMA_forecast_{market_name}.png", dpi=150)
 
-    avg_mae_per_day = ae_per_day_all / available_n_days
+    avg_mae_per_day = ae_per_day / available_n_days
 
     plt.figure(figsize=(10, 5))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
-    plt.title(f"ARIMA - Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}")
+    plt.title(f"ARIMA - MAE osobne dla danego dnia predykcji (1–{days_to_predict} dni) - {market_name}")
     plt.xlabel("Dzień predykcji")
     plt.ylabel("Średnie MAE")
-    plt.savefig(f"{outdir}/avg_mae_per_day_ARIMA_{market_name}.png")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f"{outdir}/MAE_{market_name}.png")

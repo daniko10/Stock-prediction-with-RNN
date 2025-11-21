@@ -31,11 +31,11 @@ if __name__ == "__main__":
     print(f"Roczna zmienność (sigma): {sigma:.4f}")
 
     n_time_intervals = days_to_predict
-    n_simulations = 1000
+    n_simulations = 10
 
     dt = T / n_time_intervals
 
-    ae_per_day_all = np.zeros((days_to_predict,))
+    ae_per_day = np.zeros((days_to_predict,))
     S_fwd = np.zeros((n_time_intervals + 1, n_simulations))
 
     available_n_days = len(stock_prices) - days_to_predict
@@ -45,13 +45,46 @@ if __name__ == "__main__":
         for t in range(1, n_time_intervals + 1):
             Z = np.random.standard_normal(n_simulations)
             S_fwd[t] = S_fwd[t - 1] * np.exp((mu - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z)
-        for d in range(days_to_predict):
-            ae_per_day_all[d] += np.abs(np.median(S_fwd[d + 1]) - stock_prices.iloc[i + d + 1])
+        for d in range(days_to_predict): # Licze MAE tylko dla pierwszej symulacji
+            ae_per_day[d] += np.abs(S_fwd[d + 1, 0] - stock_prices.iloc[i + d + 1])
+        if i == 0: # Wyrysowanie wszystkikch dla pierwszej iteracji - 10 pierwszych dni styczniowych
+            true_future = stock_prices.iloc[0 : days_to_predict+1].reset_index(drop=True)
+            plt.figure(figsize=(12, 6))
+            plt.plot(range(n_time_intervals), S_fwd[1:], lw=1)
+            plt.plot(range(n_time_intervals), true_future[1:], linestyle="--", color="tab:orange",
+                    linewidth=2, label="Prawdziwa przyszłość")
+            plt.title(f"GBM - symulacja 10 możliwości - {market_name}")
+            plt.xlabel("Dni")
+            plt.ylabel("Cena zamknięcia")
+            plt.legend()
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(f"{outdir}/GBM_simulations_all_{market_name}.png", dpi=150)
+            plt.show()
+            plt.clf()
 
-    avg_mae_per_day = ae_per_day_all / available_n_days
+            # Rysowanie jednej ścieżki wraz z prawdziwą przyszłością
+            plt.figure(figsize=(12, 6))
+            plt.plot(range(n_time_intervals), true_future[1:], linestyle="--", color="tab:orange",
+                    linewidth=2, label="Prawdziwa przyszłość")
+            plt.plot(range(n_time_intervals), S_fwd[1:, 0], color="tab:green",
+                    linewidth=2, label="Predykcja (1. ścieżka)")
+            plt.title(f"GBM - Predykcja jednej ścieżki razem z prawdziwą - {market_name}")
+            plt.xlabel("Dni")
+            plt.ylabel("Cena zamknięcia")
+            plt.legend()
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(f"{outdir}/GBM_forecast_{market_name}.png", dpi=150)
+            plt.show()
+
+
+    avg_mae_per_day = ae_per_day / available_n_days
     plt.figure(figsize=(10,5))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
-    plt.title(f"GBM - Średnie MAE dla dnia predykcji (1–{days_to_predict} dni) - {market_name}")
+    plt.title(f"GBM - MAE osobne dla danego dnia predykcji (1–{days_to_predict} dni) - {market_name}")
     plt.xlabel("Dzień predykcji")
     plt.ylabel("Średnie MAE")
-    plt.savefig(f"{outdir}/avg_mae_per_day_GBM_{market_name}.png")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f"{outdir}/MAE_{market_name}.png")
