@@ -49,8 +49,8 @@ if __name__ == "__main__":
         if i == 0: # Wyrysowanie wszystkikch dla pierwszej iteracji - 10 pierwszych dni styczniowych
             true_future = stock_prices.iloc[0 : days_to_predict+1].reset_index(drop=True)
             plt.figure(figsize=(12, 6))
-            plt.plot(range(n_time_intervals), S_fwd[1:], lw=1)
-            plt.plot(range(n_time_intervals), true_future[1:], linestyle="--", color="tab:orange",
+            plt.plot(range(1, n_time_intervals + 1), S_fwd[1:], lw=1)
+            plt.plot(range(1, n_time_intervals + 1), true_future[1:], linestyle="--", color="tab:orange",
                     linewidth=2, label="Prawdziwa przyszłość")
             plt.title(f"GBM - symulacja 10 możliwości na pierwsze 10 dni - {market_name}")
             plt.xlabel("Dni")
@@ -64,9 +64,9 @@ if __name__ == "__main__":
 
             # Rysowanie jednej ścieżki wraz z prawdziwą przyszłością
             plt.figure(figsize=(12, 6))
-            plt.plot(range(n_time_intervals), true_future[1:], linestyle="--", color="tab:orange",
+            plt.plot(range(1, n_time_intervals + 1), true_future[1:], linestyle="--", color="tab:orange",
                     linewidth=2, label="Prawdziwa przyszłość")
-            plt.plot(range(n_time_intervals), S_fwd[1:, 0], color="tab:green",
+            plt.plot(range(1, n_time_intervals + 1), S_fwd[1:, 0], color="tab:green",
                     linewidth=2, label="Predykcja (1. ścieżka)")
             plt.title(f"GBM - Predykcja na 10 dni - {market_name}")
             plt.xlabel("Dni")

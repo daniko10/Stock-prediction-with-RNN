@@ -29,8 +29,7 @@ if __name__ == "__main__":
         model = auto_arima(
             history,
             stepwise=True,
-            trend="t"
-        )
+            trend="t")
 
         forecast = model.predict(n_periods=days_to_predict)
 

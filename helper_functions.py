@@ -102,7 +102,7 @@ def build_all_sequences(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, outdir, w
     print(f"Extracting: {market_name}")
 
     features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv)
-    features = features.iloc[1:-1].reset_index(drop=True)
+    features = features.iloc[1:].reset_index(drop=True)
 
     X = features.drop(columns=['Date'])
     y = features['Close'].values

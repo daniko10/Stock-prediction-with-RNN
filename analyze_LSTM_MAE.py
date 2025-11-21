@@ -31,12 +31,9 @@ if __name__ == '__main__':
     scaler_X = joblib.load(scaler_X_path)
     scaler_y = joblib.load(scaler_y_path)
 
-    features = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, False)
     features_future = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, True)
-
-    features = features.iloc[1:-1].reset_index(drop=True)
-    dates = features['Date']
-    y_t = features['Close']
+    features_future = features_future.iloc[1:].reset_index(drop=True)
+    features = features_future[features_future['Date'] <= '2023-12-31']
 
     y_true_future = features_future['Close']
     X = features_future.drop(columns=['Date'])
@@ -52,7 +49,6 @@ if __name__ == '__main__':
         exit(1)
 
     ae_per_day_all = np.zeros((days_to_predict,))
-    average_close = y_true_future[len(features):].mean()
 
     available_n_days = len(features_future) - len(features) - days_to_predict
     for i in range(available_n_days):
@@ -62,7 +58,7 @@ if __name__ == '__main__':
         Y_pred_scaled = model.predict(last_window)
         Y_pred = scaler_y.inverse_transform(Y_pred_scaled)[0]
 
-        y_true = y_true_future[len(features)+i:(len(features) + days_to_predict + i)].values
+        y_true = y_true_future[len(features)+i:(len(features)+days_to_predict+i)].values
         
         for j in range(days_to_predict):
             ae_per_day_all[j] += abs(y_true[j] - Y_pred[j])
@@ -82,7 +78,7 @@ if __name__ == '__main__':
     avg_mae_per_day = ae_per_day_all / available_n_days
     plt.figure(figsize=(8, 4))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
-    plt.title(f"LSTM - MAE osobne dla danego dnia predykcji (1–{days_to_predict} dni) - {market_name}\nŚrednia cena zamknięcia styczeń-grudzień 2024: {average_close:.2f}")
+    plt.title(f"LSTM - MAE osobne dla danego dnia predykcji (1–{days_to_predict} dni) - {market_name}")
     plt.xlabel("Dzień predykcji")
     plt.ylabel("Średnie MAE")
     plt.grid(True)
