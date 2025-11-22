@@ -5,8 +5,6 @@ from constants import local_csv, outdir_GBM
 import matplotlib.pyplot as plt
 from read_files import read_stock_data
 
-np.random.seed(42)
-
 business_day_in_year = 252
 days_to_predict = 10
 
