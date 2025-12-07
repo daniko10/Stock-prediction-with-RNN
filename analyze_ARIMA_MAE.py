@@ -23,18 +23,18 @@ if __name__ == "__main__":
 
     available_n_days = len(stock_prices_future) - days_to_predict
 
+    n_train = len(train_data)
+    window_size = 120
+
     for i in range(available_n_days):
-        history = full_series.iloc[:len(train_data) + i]
+        history = full_series.iloc[(n_train - window_size + i):(n_train + i)]
 
-        model = auto_arima(
-            history,
-            stepwise=True,
-            trend="t")
-
+        model = auto_arima(history, stepwise=False)
         forecast = model.predict(n_periods=days_to_predict)
 
         for d in range(days_to_predict):
             ae_per_day[d] += np.abs(forecast.iloc[d] - stock_prices_future.iloc[i + d])
+
         if i == 0: # rysuje dla pierwszych 10 dni styczniowych
             true_future = stock_prices_future.iloc[0 : days_to_predict].reset_index(drop=True)
             plt.figure(figsize=(12, 6))
