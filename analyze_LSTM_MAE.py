@@ -31,17 +31,22 @@ if __name__ == '__main__':
     scaler_X = joblib.load(scaler_X_path)
     scaler_y = joblib.load(scaler_y_path)
 
-    features_future = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, True)
-    features_future = features_future.iloc[1:].reset_index(drop=True)
-    features = features_future[features_future['Date'] <= '2023-12-31']
+    load_all_date = True
+    features_all = build_features(local_csv, spx_csv, fx_csv, cpi_csv, rate_csv, load_all_date)
+    features_all = features_all.iloc[1:].reset_index(drop=True)
+    features_train = features_all[features_all['Date'] <= '2023-12-31']
 
-    y_true_future = features_future['Close']
-    X = features_future.drop(columns=['Date'])
+    X = features_all.drop(columns=['Date'])
     X_scaled = scaler_X.transform(X)
+    true_prices = features_all['Close']
 
-    model_path = os.path.join(outdir_models, f"model_BS_{batch_size}_WS_{window_size}_D_{dropout}_{market_name}.h5")
+    n_total = len(features_all)
+    n_train = len(features_train)
+
+    available_n_days = n_total - n_train - days_to_predict
 
     try:
+        model_path = os.path.join(outdir_models, f"model_BS_{batch_size}_WS_{window_size}_D_{dropout}_{market_name}.h5")
         model = load_model(model_path, compile=False)
         print(f"\nModel załadowany: {model_path}")
     except Exception as e:
@@ -50,18 +55,17 @@ if __name__ == '__main__':
 
     ae_per_day_all = np.zeros((days_to_predict,))
 
-    available_n_days = len(features_future) - len(features) - days_to_predict
     for i in range(available_n_days):
-        last_window = X_scaled[len(features)-window_size+i:(len(features) + i)]
+        last_window = X_scaled[n_train-window_size+i:(n_train + i)]
         last_window = np.expand_dims(last_window, axis=0)
 
         Y_pred_scaled = model.predict(last_window)
         Y_pred = scaler_y.inverse_transform(Y_pred_scaled)[0]
-
-        y_true = y_true_future[len(features)+i:(len(features)+days_to_predict+i)].values
+        y_true = true_prices[n_train+i:(n_train+days_to_predict+i)].values
         
         for j in range(days_to_predict):
             ae_per_day_all[j] += abs(y_true[j] - Y_pred[j])
+
         if i == 0:  # rysuje dla pierwszych 10 dni styczniowych
             plt.figure(figsize=(12, 6))
             plt.plot(range(1, days_to_predict + 1), Y_pred, marker='o', label="Predykcja LSTM")
@@ -76,6 +80,7 @@ if __name__ == '__main__':
             plt.savefig(f"{outdir_LSTM}/LSTM_forecast_{market_name}.png", dpi=150)
     
     avg_mae_per_day = ae_per_day_all / available_n_days
+    print(f"MAE: {avg_mae_per_day.mean()}")
     plt.figure(figsize=(8, 4))
     plt.plot(range(1, days_to_predict + 1), avg_mae_per_day, marker='o')
     plt.title(f"LSTM - MAE osobne dla danego dnia predykcji (1–{days_to_predict} dni) - {market_name}")
